@@ -1,0 +1,13 @@
+image: node:latest
+
+stages:
+  - test
+
+test:
+  script:
+    - npm install
+    - npm test -- --reporter mocha-junit-reporter
+  artifacts:
+    when: always
+    reports:
+      junit: test-results.xml
