@@ -6,8 +6,12 @@ function tableLengthWithoutBorders(textTable) {
     return textTable.length - VERTICAL_BORDERS
 }
 
-function makeHorizontalLine(result, name) {
-    for (let i = 0; i < tableLengthWithoutBorders(getTextEmptyTable(name)); i++) {
+function makeInnerHorizontalLine(result, name) {
+    return makeHorizontalLine(result, tableLengthWithoutBorders(getTextEmptyTable(name)))
+}
+
+function makeHorizontalLine(result, size) {
+    for (let i = 0; i < size; i++) {
         result += '═';
     }
 
@@ -24,11 +28,11 @@ function addEndOfLineMarker(element) {
 
 function getEmptyTable(tableName) {
     let result = '╔';
-    result = makeHorizontalLine(result, tableName);
+    result = makeInnerHorizontalLine(result, tableName);
     result += addEndOfLineMarker('╗');
     result += addEndOfLineMarker(getTextEmptyTable(tableName));
     result += '╚';
-    result = makeHorizontalLine(result, tableName);
+    result = makeInnerHorizontalLine(result, tableName);
     result += addEndOfLineMarker('╝');
     return result;
 }
@@ -75,24 +79,19 @@ function getColumnCount(dataSets) {
 
 function getHeaderOfTheTable(dataSets) {
     let maxColumnSize = getMaxColumnSize(dataSets);
-    let result = '';
     const columnCount = getColumnCount(dataSets);
     if (maxColumnSize % 2 === 0) {
         maxColumnSize += 2;
     } else {
         maxColumnSize += 3;
     }
-    result += '╔';
+    let result = '╔';
     for (let j = 1; j < columnCount; j++) {
-        for (let i = 0; i < maxColumnSize; i++) {
-            result += '═';
-        }
+        result =  makeHorizontalLine(result, maxColumnSize)
         result += '╦';
     }
-    for (let i = 0; i < maxColumnSize; i++) {
-        result += '═';
-    }
-    result += '╗' + os.EOL;
+    result =  makeHorizontalLine(result, maxColumnSize);
+    result += addEndOfLineMarker('╗');
     const columnNames = dataSets[0].getColumnNames();
     for (let column = 0; column < columnCount; column++) {
         result += '║';
@@ -115,33 +114,25 @@ function getHeaderOfTheTable(dataSets) {
             }
         }
     }
-    result += '║' + os.EOL;
+    result += addEndOfLineMarker('║');
 
     //last string of the header
     if (dataSets.length > 0) {
         result += '╠';
         for (let j = 1; j < columnCount; j++) {
-            for (let i = 0; i < maxColumnSize; i++) {
-                result += '═';
-            }
+            result = makeHorizontalLine(result, maxColumnSize)
             result += '╬';
         }
-        for (let i = 0; i < maxColumnSize; i++) {
-            result += '═';
-        }
-        result += '╣' + os.EOL;
+        result = makeHorizontalLine(result, maxColumnSize);
+        result += addEndOfLineMarker('╣');
     } else {
         result += '╚';
         for (let j = 1; j < columnCount; j++) {
-            for (let i = 0; i < maxColumnSize; i++) {
-                result += '═';
-            }
+            result = makeHorizontalLine(result, maxColumnSize)
             result += '╩';
         }
-        for (let i = 0; i < maxColumnSize; i++) {
-            result += '═';
-        }
-        result += '╝' + os.EOL;
+        result = makeHorizontalLine(result, maxColumnSize)
+        result += addEndOfLineMarker('╝');
     }
     return result;
 }
@@ -193,7 +184,7 @@ function getStringTableData(dataSets) {
             for (let i = 0; i < maxColumnSize; i++) {
                 result += '═';
             }
-            result += '╣' + os.EOL;
+            result += addEndOfLineMarker('╣');
         }
     }
     result += '╚';
@@ -206,7 +197,7 @@ function getStringTableData(dataSets) {
     for (let i = 0; i < maxColumnSize; i++) {
         result += '═';
     }
-    result += '╝' + os.EOL;
+    result += addEndOfLineMarker('╝');
     return result;
 }
 
