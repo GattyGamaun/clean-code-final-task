@@ -1,48 +1,76 @@
 const os = require('os');
 
-function getEmptyTable(tableName) {
-    const textEmptyTable = '║ Table "' + tableName + '" is empty or does not exist ║';
-    let result = '╔';
-    for (let i = 0; i < textEmptyTable.length - 2; i++) {
+const VERTICAL_BORDERS = 2;
+
+function tableLengthWithoutBorders(textTable) {
+    return textTable.length - VERTICAL_BORDERS
+}
+
+function makeHorizontalLine(result, name) {
+    for (let i = 0; i < tableLengthWithoutBorders(getTextEmptyTable(name)); i++) {
         result += '═';
     }
-    result += '╗' + os.EOL;
-    result += textEmptyTable + os.EOL;
-    result += '╚';
-    for (let i = 0; i < textEmptyTable.length - 2; i++) {
-        result += '═';
-    }
-    result += '╝' + os.EOL;
+
     return result;
 }
 
-function getMaxColumnSize(dataSets) {
-    let maxLength = 0;
-    if (dataSets.length > 0) {
-        const columnNames = dataSets[0].getColumnNames();
-        for (const columnName of columnNames) {
-            if (columnName.length > maxLength) {
-                maxLength = columnName.length;
-            }
-        }
-        for (const dataSet of dataSets) {
-            const values = dataSet.getValues();
-            for (const value of values) {
-                if (value.toString().length > maxLength) {
-                    maxLength = value.toString().length;
-                }
-            }
+function getTextEmptyTable(name) {
+    return '║ Table "' + name + '" is empty or does not exist ║';
+}
+
+function addEndOfLineMarker(element) {
+    return element + os.EOL;
+}
+
+function getEmptyTable(tableName) {
+    let result = '╔';
+    result = makeHorizontalLine(result, tableName);
+    result += addEndOfLineMarker('╗');
+    result += addEndOfLineMarker(getTextEmptyTable(tableName));
+    result += '╚';
+    result = makeHorizontalLine(result, tableName);
+    result += addEndOfLineMarker('╝');
+    return result;
+}
+
+function checkDataSets(dataSets) {
+    if (dataSets.length <= 0) {
+        return 0
+    }
+}
+
+function test(columnNames, maxLength) {
+    for (const columnName of columnNames) {
+        if (columnName.toString().length > maxLength) {
+            maxLength = columnName.toString().length;
         }
     }
+
+    return maxLength;
+}
+
+function getMaxColumnSize(dataSets) {
+    if (dataSets.length <= 0) {
+        return 0;
+    }
+    let maxLength = 0;
+
+    const columnNames = dataSets[0].getColumnNames();
+    maxLength = test(columnNames, maxLength)
+
+    for (const dataSet of dataSets) {
+        const values = dataSet.getValues();
+        maxLength = test(values, maxLength)
+    }
+
     return maxLength;
 }
 
 function getColumnCount(dataSets) {
-    const result = 0;
-    if (dataSets.length > 0) {
-        return dataSets[0].getColumnNames().length;
+    if (dataSets.length <= 0) {
+        return 0;
     }
-    return result;
+    return dataSets[0].getColumnNames().length;
 }
 
 function getHeaderOfTheTable(dataSets) {
