@@ -1,16 +1,27 @@
 const os = require('os');
 
-const VERTICAL_BORDERS = 2;
+const ONE_COLUMN = 2;
+const TWO_COLUMNS = 3
+const SECOND_VALUE = 2;
+const SHIFT = 1;
 
-function tableLengthWithoutBorders(textTable) {
-    return textTable.length - VERTICAL_BORDERS
+function getEmptyTableMessage(name) {
+    return '║ Table "' + name + '" is empty or does not exist ║';
 }
 
-function makeInnerHorizontalLine(result, name) {
-    return makeHorizontalLine(result, tableLengthWithoutBorders(getTextEmptyTable(name)))
+function addEndOfLineMarker(element = '') {
+    return element + os.EOL;
 }
 
-function makeHorizontalLine(result, size) {
+function updateLength(text) {
+    return text.length - ONE_COLUMN;
+}
+
+function makeLineForEmptyTable(result, text) {
+    return continueEqualityLine(result, updateLength(getEmptyTableMessage(text)));
+}
+
+function continueEqualityLine(result, size) {
     for (let i = 0; i < size; i++) {
         result += '═';
     }
@@ -18,196 +29,235 @@ function makeHorizontalLine(result, size) {
     return result;
 }
 
-function getTextEmptyTable(name) {
-    return '║ Table "' + name + '" is empty or does not exist ║';
-}
+function addSpaceToResult(result, size) {
+    for (let i = 0; i < size; i++) {
+        result += ' ';
+    }
 
-function addEndOfLineMarker(element) {
-    return element + os.EOL;
-}
-
-function getEmptyTable(tableName) {
-    let result = '╔';
-    result = makeInnerHorizontalLine(result, tableName);
-    result += addEndOfLineMarker('╗');
-    result += addEndOfLineMarker(getTextEmptyTable(tableName));
-    result += '╚';
-    result = makeInnerHorizontalLine(result, tableName);
-    result += addEndOfLineMarker('╝');
     return result;
 }
 
-function checkDataSets(dataSets) {
-    if (dataSets.length <= 0) {
-        return 0
+function makeLineWithJunction(result, count, size) {
+    for (let i = 1; i < count; i++) {
+        result = continueEqualityLine(result, size) + '╬';
     }
+
+    return result;
 }
 
-function test(columnNames, maxLength) {
-    for (const columnName of columnNames) {
-        if (columnName.toString().length > maxLength) {
-            maxLength = columnName.toString().length;
-        }
+function makeLineWithTJunction(result, count, size) {
+    for (let i = 1; i < count; i++) {
+        result = continueEqualityLine(result, size) + '╦';
+    }
+
+    return result;
+}
+
+function getColumnLength(array) {
+    return array[0].getColumnNames().length;
+}
+
+function makeLineWithTUpJunction(result, data) {
+    for (let i = 1; i < getColumnLength(data); i++) {
+        result = continueEqualityLine(result, calculateMaxColumnSize(data)) + '╩';
+    }
+
+    return result;
+}
+
+function getEmptyTable(name) {
+    const result = makeLineForEmptyTable('╔', name) + addEndOfLineMarker('╗')
+        + addEndOfLineMarker(getEmptyTableMessage(name)) + '╚';
+    return makeLineForEmptyTable(result, name) + addEndOfLineMarker('╝');
+}
+
+function reverseMaxLength(name, maxLength) {
+    if (name.toString().length > maxLength) {
+        maxLength = name.toString().length;
     }
 
     return maxLength;
 }
 
-function getMaxColumnSize(dataSets) {
-    if (dataSets.length <= 0) {
-        return 0;
-    }
-    let maxLength = 0;
-
-    const columnNames = dataSets[0].getColumnNames();
-    maxLength = test(columnNames, maxLength)
-
-    for (const dataSet of dataSets) {
-        const values = dataSet.getValues();
-        maxLength = test(values, maxLength)
+function updateMaxLength(names, maxLength) {
+    for (const name of names) {
+        maxLength = reverseMaxLength(name, maxLength);
     }
 
     return maxLength;
 }
 
-function getColumnCount(dataSets) {
-    if (dataSets.length <= 0) {
+function getMaxColumnLength(array) {
+    if (array.length <= 0) {
         return 0;
     }
-    return dataSets[0].getColumnNames().length;
+
+    let maxLength = updateMaxLength(array[0].getColumnNames(), 0);
+
+    for (const dataSet of array) {
+        maxLength = updateMaxLength(dataSet.getValues(), maxLength);
+    }
+
+    return maxLength;
 }
 
-function getHeaderOfTheTable(dataSets) {
-    let maxColumnSize = getMaxColumnSize(dataSets);
-    const columnCount = getColumnCount(dataSets);
+function calculateMaxColumnSize(array) {
+    let maxColumnSize = getMaxColumnLength(array);
     if (maxColumnSize % 2 === 0) {
-        maxColumnSize += 2;
-    } else {
-        maxColumnSize += 3;
+        return maxColumnSize + ONE_COLUMN;
     }
-    let result = '╔';
-    for (let j = 1; j < columnCount; j++) {
-        result =  makeHorizontalLine(result, maxColumnSize)
-        result += '╦';
-    }
-    result =  makeHorizontalLine(result, maxColumnSize);
-    result += addEndOfLineMarker('╗');
-    const columnNames = dataSets[0].getColumnNames();
-    for (let column = 0; column < columnCount; column++) {
-        result += '║';
-        const columnNamesLength = columnNames[column].length;
-        if (columnNamesLength % 2 === 0) {
-            for (let j = 0; j < (maxColumnSize - columnNamesLength) / 2; j++) {
-                result += ' ';
-            }
-            result += columnNames[column].toString();
-            for (let j = 0; j < (maxColumnSize - columnNamesLength) / 2; j++) {
-                result += ' ';
-            }
-        } else {
-            for (let j = 0; j < Math.trunc((maxColumnSize - columnNamesLength) / 2); j++) {
-                result += ' ';
-            }
-            result += columnNames[column].toString();
-            for (let j = 0; j <= Math.trunc((maxColumnSize - columnNamesLength) / 2); j++) {
-                result += ' ';
-            }
-        }
-    }
-    result += addEndOfLineMarker('║');
 
-    //last string of the header
-    if (dataSets.length > 0) {
+    return maxColumnSize + TWO_COLUMNS;
+}
+
+function getTruncatedLength(data, nameLength) {
+    return Math.trunc( (calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
+}
+
+function addTextToTheCell(text, column) {
+    return text[column].toString();
+}
+
+function getTextLength(text, column) {
+    return addTextToTheCell(text, column).length;
+}
+
+function getPaddingWithNames(result, data, column) {
+    const text = data[0].getColumnNames();
+    const columnNamesLength = getTextLength(text, column);
+
+    result = addSpaceToResult(result, getTruncatedLength(data, columnNamesLength))
+        + addTextToTheCell(text, column);
+    return addSpaceToResult(result, getTruncatedLength(data, columnNamesLength))
+}
+
+function getPaddingWithValues(result, data, values, column) {
+    const columnNamesLength = getTextLength(values, column);
+
+    result = addSpaceToResult(result, getTruncatedLength(data, columnNamesLength))
+        + addTextToTheCell(values, column);
+    return addSpaceToResult(result, getTruncatedLength(data, columnNamesLength))
+}
+
+function addShiftedSpaceToResult(result, data, length) {
+    return addSpaceToResult(result, getTruncatedLength(data, length) + SHIFT)
+}
+
+function getPaddingWithShortColumn(result, data, column) {
+    const names = data[0].getColumnNames();
+    const columnNamesLength = getTextLength(names, column);
+
+    result = addSpaceToResult(result, getTruncatedLength(data, columnNamesLength))
+        + addTextToTheCell(names, column);
+    return addShiftedSpaceToResult(result, data, columnNamesLength);
+}
+
+function addText(result, data, column) {
+    const names = data[0].getColumnNames();
+
+    if (getTextLength(names, column) % 2 === 0) {
+        result = getPaddingWithNames(result, data, column)
+    } else {
+        result = getPaddingWithShortColumn(result, data, column)
+    }
+
+    return result;
+}
+
+function makeTextRow(result, data) {
+    for (let i = 0; i < getColumnLength(data); i++) {
+        result += '║';
+        result = addText(result, data, i);
+    }
+
+    return result;
+}
+
+function makeFullHorizontalLine(result, columnCount, maxColumnSize) {
+    result = makeLineWithJunction(result, columnCount, maxColumnSize)
+    return continueEqualityLine(result, maxColumnSize);
+}
+
+function getLineAfterHeader(result, columnCount, maxColumnSize) {
+    result += '╠';
+    return makeFullHorizontalLine(result, columnCount, maxColumnSize);
+}
+
+function getHeaderOfTheTable(data) {
+    const maxColumnSize = calculateMaxColumnSize(data);
+    const columnCount = getColumnLength(data);
+
+    let result = makeLineWithTJunction('╔', columnCount, maxColumnSize)
+    result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╗');
+    result = makeTextRow(result, data) + addEndOfLineMarker('║');
+
+    if (data.length > 0) {
+        result = getLineAfterHeader(result, columnCount, maxColumnSize) + addEndOfLineMarker('╣')
+    }
+    return result;
+}
+
+function chainRows(result, data, column, i) {
+    const values = data[column].getValues()
+    const valuesLength = values[i].toString().length;
+
+    if (valuesLength % 2 === 0) {
+        result = getPaddingWithValues(result, data, values, i) + '║';
+    } else {
+        result = addSpaceToResult(result, getTruncatedLength(data, valuesLength))
+            + addTextToTheCell(values, i);
+        result = addShiftedSpaceToResult(result, data, valuesLength) + '║';
+    }
+    return result;
+}
+
+function makeColumns(result, data, columns) {
+    for (let i = 0; i < getColumnLength(data); i++) {
+        result = chainRows(result, data, columns, i)
+    }
+
+    return result;
+}
+
+function makeOneColumn(result, data, columns) {
+    const rowsCount = data.length;
+    const maxColumnSize = calculateMaxColumnSize(data);
+    const columnCount = getColumnLength(data);
+    if (columns < rowsCount - 1) {
         result += '╠';
-        for (let j = 1; j < columnCount; j++) {
-            result = makeHorizontalLine(result, maxColumnSize)
-            result += '╬';
-        }
-        result = makeHorizontalLine(result, maxColumnSize);
-        result += addEndOfLineMarker('╣');
-    } else {
-        result += '╚';
-        for (let j = 1; j < columnCount; j++) {
-            result = makeHorizontalLine(result, maxColumnSize)
-            result += '╩';
-        }
-        result = makeHorizontalLine(result, maxColumnSize)
-        result += addEndOfLineMarker('╝');
+        result = makeLineWithJunction(result, columnCount, maxColumnSize);
+        result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╣');
     }
+
     return result;
 }
 
-function getStringTableData(dataSets) {
-    const rowsCount = dataSets.length;
-    let maxColumnSize = getMaxColumnSize(dataSets);
+function makeRows(data) {
     let result = '';
-    if (maxColumnSize % 2 === 0) {
-        maxColumnSize += 2;
-    } else {
-        maxColumnSize += 3;
-    }
-    const columnCount = getColumnCount(dataSets);
-    for (let row = 0; row < rowsCount; row++) {
-        const values = dataSets[row].getValues();
+    for (let i = 0; i < data.length; i++) {
         result += '║';
-        for (let column = 0; column < columnCount; column++) {
-            const valuesLength = values[column].toString().length;
-            if (valuesLength % 2 === 0) {
-                for (let j = 0; j < (maxColumnSize - valuesLength) / 2; j++) {
-                    result += ' ';
-                }
-                result += values[column].toString();
-                for (let j = 0; j < (maxColumnSize - valuesLength) / 2; j++) {
-                    result += ' ';
-                }
-                result += '║';
-            } else {
-                for (let j = 0; j < Math.trunc((maxColumnSize - valuesLength) / 2); j++) {
-                    result += ' ';
-                }
-                result += values[column].toString();
-                for (let j = 0; j <= Math.trunc((maxColumnSize - valuesLength) / 2); j++) {
-                    result += ' ';
-                }
-                result += '║';
-            }
-        }
-        result += os.EOL;
-        if (row < rowsCount - 1) {
-            result += '╠';
-            for (let j = 1; j < columnCount; j++) {
-                for (let i = 0; i < maxColumnSize; i++) {
-                    result += '═';
-                }
-                result += '╬';
-            }
-            for (let i = 0; i < maxColumnSize; i++) {
-                result += '═';
-            }
-            result += addEndOfLineMarker('╣');
-        }
+        result = makeColumns(result, data, i) + addEndOfLineMarker();
+        result = makeOneColumn(result, data, i)
     }
+
+    return result;
+}
+
+
+function getStringTableData(data) {
+    let result = makeRows(data);
     result += '╚';
-    for (let j = 1; j < columnCount; j++) {
-        for (let i = 0; i < maxColumnSize; i++) {
-            result += '═';
-        }
-        result += '╩';
-    }
-    for (let i = 0; i < maxColumnSize; i++) {
-        result += '═';
-    }
-    result += addEndOfLineMarker('╝');
+    result = makeLineWithTUpJunction(result, data);
+    result = continueEqualityLine(result,  calculateMaxColumnSize(data)) + addEndOfLineMarker('╝');
     return result;
 }
 
 function getTableString(data, tableName) {
-    const maxColumnSize = getMaxColumnSize(data);
-    if (maxColumnSize === 0) {
+    if (getMaxColumnLength(data) === 0) {
         return getEmptyTable(tableName);
-    } else {
-        return getHeaderOfTheTable(data) + getStringTableData(data);
     }
+
+    return getHeaderOfTheTable(data) + getStringTableData(data);
 }
 
 module.exports = class Print {
@@ -221,12 +271,28 @@ module.exports = class Print {
     }
 
     process(input) {
-        const command = input.split(' ');
-        if (command.length !== 2) {
-            throw new TypeError('Incorrect number of parameters. Expected 1, got ' + (command.length - 1));
-        }
+        const command = this.splitInput(input);
+        this.getIncorrectNumberOfParametersError(command);
+        this.updateView(command)
+    }
+
+    updateView(command) {
         const tableName = command[1];
         const data = this.manager.getTableData(tableName);
         this.view.write(getTableString(data, tableName));
+    }
+
+    getIncorrectNumberOfParametersError(command) {
+        if (command.length !== SECOND_VALUE) {
+            throw new TypeError('Incorrect number of parameters. Expected 1, got ' + this.getNumberOfParams(command));
+        }
+    }
+
+    splitInput(input) {
+        return input.split(' ');
+    }
+
+    getNumberOfParams(command) {
+        return command.length - 1;
     }
 };
