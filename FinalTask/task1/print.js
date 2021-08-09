@@ -37,7 +37,9 @@ function addSpaceToResult(result, size) {
     return result;
 }
 
-function makeLineWithJunction(result, count, size) {
+function makeLineWithJunction(result, data) {
+    const size = calculateMaxColumnSize(data);
+    const count = getColumnLength(data);
     for (let i = 1; i < count; i++) {
         result = continueEqualityLine(result, size) + '╬';
     }
@@ -45,7 +47,9 @@ function makeLineWithJunction(result, count, size) {
     return result;
 }
 
-function makeLineWithTJunction(result, count, size) {
+function makeLineWithTJunction(result, data) {
+    const size = calculateMaxColumnSize(data);
+    const count = getColumnLength(data);
     for (let i = 1; i < count; i++) {
         result = continueEqualityLine(result, size) + '╦';
     }
@@ -171,31 +175,27 @@ function makeTextRow(result, data) {
     return result;
 }
 
-function makeFullHorizontalLine(result, columnCount, maxColumnSize) {
-    result = makeLineWithJunction(result, columnCount, maxColumnSize)
+function makeFullHorizontalLine(result, data) {
+    const maxColumnSize = calculateMaxColumnSize(data);
+    result = makeLineWithJunction(result, data)
     return continueEqualityLine(result, maxColumnSize);
-}
-
-function getLineAfterHeader(result, columnCount, maxColumnSize) {
-    return makeFullHorizontalLine(result, columnCount, maxColumnSize);
 }
 
 function getHeaderOfTheTable(data) {
     const maxColumnSize = calculateMaxColumnSize(data);
-    const columnCount = getColumnLength(data);
 
-    let result = makeLineWithTJunction('╔', columnCount, maxColumnSize)
+    let result = makeLineWithTJunction('╔', data)
     result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╗');
     result = makeTextRow(result, data) + addEndOfLineMarker('║');
 
     if (data.length > 0) {
-        result += getLineAfterHeader('╠', columnCount, maxColumnSize) + addEndOfLineMarker('╣')
+        result += makeFullHorizontalLine('╠', data) + addEndOfLineMarker('╣')
     }
     return result;
 }
 
 function chainRows(result, data, column, i) {
-    const values = data[column].getValues()
+    const values = data[column].getValues();
     const valuesLength = values[i].toString().length;
 
     if (valuesLength % 2 === 0) {
@@ -216,11 +216,10 @@ function makeColumns(result, data, columns) {
 }
 
 function makeOneColumn(result, data, columns) {
-    const rowsCount = data.length;
     const maxColumnSize = calculateMaxColumnSize(data);
-    const columnCount = getColumnLength(data);
-    if (columns < rowsCount - 1) {
-        result += makeLineWithJunction('╠', columnCount, maxColumnSize);
+
+    if (columns < data.length - 1) {
+        result += makeLineWithJunction('╠', data);
         result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╣');
     }
 
@@ -265,10 +264,10 @@ module.exports = class Print {
     process(input) {
         const command = this.splitInput(input);
         this.getIncorrectNumberOfParametersError(command);
-        this.updateView(command)
+        this.makeView(command)
     }
 
-    updateView(command) {
+    makeView(command) {
         const tableName = command[1];
         const data = this.manager.getTableData(tableName);
         this.view.write(getTableString(data, tableName));
