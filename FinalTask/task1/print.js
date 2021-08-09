@@ -91,7 +91,6 @@ function getMaxColumnLength(array) {
     if (array.length <= 0) {
         return 0;
     }
-
     let maxLength = updateMaxLength(array[0].getColumnNames(), 0);
 
     for (const dataSet of array) {
@@ -166,8 +165,7 @@ function addText(result, data, column) {
 
 function makeTextRow(result, data) {
     for (let i = 0; i < getColumnLength(data); i++) {
-        result += '║';
-        result = addText(result, data, i);
+        result += addText('║', data, i);
     }
 
     return result;
@@ -179,7 +177,6 @@ function makeFullHorizontalLine(result, columnCount, maxColumnSize) {
 }
 
 function getLineAfterHeader(result, columnCount, maxColumnSize) {
-    result += '╠';
     return makeFullHorizontalLine(result, columnCount, maxColumnSize);
 }
 
@@ -192,7 +189,7 @@ function getHeaderOfTheTable(data) {
     result = makeTextRow(result, data) + addEndOfLineMarker('║');
 
     if (data.length > 0) {
-        result = getLineAfterHeader(result, columnCount, maxColumnSize) + addEndOfLineMarker('╣')
+        result += getLineAfterHeader('╠', columnCount, maxColumnSize) + addEndOfLineMarker('╣')
     }
     return result;
 }
@@ -204,8 +201,7 @@ function chainRows(result, data, column, i) {
     if (valuesLength % 2 === 0) {
         result = getPaddingWithValues(result, data, values, i) + '║';
     } else {
-        result = addSpaceToResult(result, getTruncatedLength(data, valuesLength))
-            + addTextToTheCell(values, i);
+        result = addSpaceToResult(result, getTruncatedLength(data, valuesLength)) + addTextToTheCell(values, i);
         result = addShiftedSpaceToResult(result, data, valuesLength) + '║';
     }
     return result;
@@ -224,8 +220,7 @@ function makeOneColumn(result, data, columns) {
     const maxColumnSize = calculateMaxColumnSize(data);
     const columnCount = getColumnLength(data);
     if (columns < rowsCount - 1) {
-        result += '╠';
-        result = makeLineWithJunction(result, columnCount, maxColumnSize);
+        result += makeLineWithJunction('╠', columnCount, maxColumnSize);
         result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╣');
     }
 
@@ -235,19 +230,16 @@ function makeOneColumn(result, data, columns) {
 function makeRows(data) {
     let result = '';
     for (let i = 0; i < data.length; i++) {
-        result += '║';
-        result = makeColumns(result, data, i) + addEndOfLineMarker();
+        result += makeColumns('║', data, i) + addEndOfLineMarker();
         result = makeOneColumn(result, data, i)
     }
 
     return result;
 }
 
-
 function getStringTableData(data) {
     let result = makeRows(data);
-    result += '╚';
-    result = makeLineWithTUpJunction(result, data);
+    result += makeLineWithTUpJunction('╚', data);
     result = continueEqualityLine(result,  calculateMaxColumnSize(data)) + addEndOfLineMarker('╝');
     return result;
 }
