@@ -19,7 +19,6 @@ function updateMaxLength(names, maxLength) {
 
 module.exports = {
     getColumnLength(array) {
-        console.log('zzz', array[0].getColumnNames().length)
         return array[0].getColumnNames().length;
     },
     getMaxColumnLength(array) {
@@ -44,8 +43,6 @@ module.exports = {
 
     },
     getTruncatedLength(data, nameLength) {
-        console.log('getTruncatedLength', this.calculateMaxColumnSize(data))
         return Math.trunc((this.calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
     }
-
 }

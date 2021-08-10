@@ -1,10 +1,8 @@
 const os = require('os');
 const calculate = require('./calculate');
+
 const ONE_COLUMN = 2;
-const TWO_COLUMNS = 3
-const SECOND_VALUE = 2;
 const SHIFT = 1;
-const ONE = 1;
 
 function getEmptyTableMessage(name) {
     return '║ Table "' + name + '" is empty or does not exist ║';
@@ -39,7 +37,7 @@ function addSpaceToResult(result, size) {
 }
 
 function makeLineWithJunction(result, data) {
-    const size = calculateMaxColumnSize(data);
+    const size = calculate.calculateMaxColumnSize(data);
 
     console.log('makeLineWithJunction', size)
     const count = calculate.getColumnLength(data);
@@ -52,7 +50,7 @@ function makeLineWithJunction(result, data) {
 }
 
 function makeLineWithTJunction(result, data) {
-    const size = calculateMaxColumnSize(data);
+    const size = calculate.calculateMaxColumnSize(data);
     console.log('makeLineWithTJunction', size)
 
     const count = calculate.getColumnLength(data);
@@ -65,12 +63,10 @@ function makeLineWithTJunction(result, data) {
     return result;
 }
 
-
-
 function makeLineWithTUpJunction(result, data) {
     for (let i = 1; i < calculate.getColumnLength(data); i++) {
-        console.log('makeLineWithTUpJunction', calculateMaxColumnSize(data))
-        result = continueEqualityLine(result, calculateMaxColumnSize(data)) + '╩';
+        console.log('makeLineWithTUpJunction', calculate.calculateMaxColumnSize(data))
+        result = continueEqualityLine(result, calculate.calculateMaxColumnSize(data)) + '╩';
     }
 
     return result;
@@ -82,47 +78,9 @@ function getEmptyTable(name) {
     return makeLineForEmptyTable(result, name) + addEndOfLineMarker('╝');
 }
 
-function reverseMaxLength(name, maxLength) {
-    if (name.toString().length > maxLength) {
-        maxLength = name.toString().length;
-    }
-
-    return maxLength;
-}
-
-function updateMaxLength(names, maxLength) {
-    for (const name of names) {
-        maxLength = reverseMaxLength(name, maxLength);
-    }
-
-    return maxLength;
-}
-
-function getMaxColumnLength(array) {
-    if (array.length <= 0) {
-        return 0;
-    }
-    let maxLength = updateMaxLength(array[0].getColumnNames(), 0);
-
-    for (const dataSet of array) {
-        maxLength = updateMaxLength(dataSet.getValues(), maxLength);
-    }
-
-    return maxLength;
-}
-
-function calculateMaxColumnSize(array) {
-    let maxColumnSize = getMaxColumnLength(array);
-    if (maxColumnSize % 2 === 0) {
-        return maxColumnSize + ONE_COLUMN;
-    }
-
-    return maxColumnSize + TWO_COLUMNS;
-}
-
 function getTruncatedLength(data, nameLength) {
-    console.log('getTruncatedLength', calculateMaxColumnSize(data))
-    return Math.trunc( (calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
+    console.log('getTruncatedLength', calculate.calculateMaxColumnSize(data))
+    return Math.trunc( (calculate.calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
 }
 
 function addTextToTheCell(text, column) {
@@ -184,15 +142,15 @@ function makeTextRow(result, data) {
 }
 
 function makeFullHorizontalLine(result, data) {
-    console.log('makeFullHorizontalLine', calculateMaxColumnSize(data))
-    const maxColumnSize = calculateMaxColumnSize(data);
+    console.log('makeFullHorizontalLine', calculate.calculateMaxColumnSize(data))
+    const maxColumnSize = calculate.calculateMaxColumnSize(data);
     result = makeLineWithJunction(result, data)
     return continueEqualityLine(result, maxColumnSize);
 }
 
 function getHeaderOfTheTable(data) {
-    console.log('getHeaderOfTheTable', calculateMaxColumnSize(data))
-    const maxColumnSize = calculateMaxColumnSize(data);
+    console.log('getHeaderOfTheTable', calculate.calculateMaxColumnSize(data))
+    const maxColumnSize = calculate.calculateMaxColumnSize(data);
 
     let result = makeLineWithTJunction('╔', data)
     result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╗');
@@ -247,12 +205,9 @@ function makeRows(data) {
 function getStringTableData(data) {
     let result = makeRows(data);
     result += makeLineWithTUpJunction('╚', data);
-    result = continueEqualityLine(result,  calculateMaxColumnSize(data)) + addEndOfLineMarker('╝');
+    result = continueEqualityLine(result,  calculate.calculateMaxColumnSize(data)) + addEndOfLineMarker('╝');
     return result;
 }
-
-
-
 
 module.exports = {
     getTableString(data, tableName) {
