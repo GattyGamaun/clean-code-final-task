@@ -37,8 +37,8 @@ function addSpaceToResult(result, size) {
 }
 
 function makeLineWithJunction(data) {
-    const size = calculate.calculateMaxColumnSize(data);
-    const count = calculate.getColumnLength(data);
+    const size = calculate.calculateColumnSize(data);
+    const count = calculate.getColumnsQuantity(data);
     let result = '╠';
 
     for (let i = 1; i < count; i++) {
@@ -49,8 +49,8 @@ function makeLineWithJunction(data) {
 }
 
 function makeLineWithTJunction(data) {
-    const size = calculate.calculateMaxColumnSize(data);
-    const count = calculate.getColumnLength(data);
+    const size = calculate.calculateColumnSize(data);
+    const count = calculate.getColumnsQuantity(data);
     let result = '╔';
 
     for (let i = 1; i < count; i++) {
@@ -62,8 +62,8 @@ function makeLineWithTJunction(data) {
 
 function makeLineWithTUpJunction(data) {
     let result = '╚';
-    for (let i = 1; i < calculate.getColumnLength(data); i++) {
-        result = continueEqualityLine(result, calculate.calculateMaxColumnSize(data)) + '╩';
+    for (let i = 1; i < calculate.getColumnsQuantity(data); i++) {
+        result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + '╩';
     }
 
     return result;
@@ -73,10 +73,6 @@ function getEmptyTable(name) {
     const result = makeLineForEmptyTable('╔', name) + addEndOfLineMarker('╗')
         + addEndOfLineMarker(getEmptyTableMessage(name)) + '╚';
     return makeLineForEmptyTable(result, name) + addEndOfLineMarker('╝');
-}
-
-function getTruncatedLength(data, nameLength) {
-    return Math.trunc((calculate.calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
 }
 
 function addTextToTheCell(text, column) {
@@ -91,17 +87,17 @@ function getPaddingWithNames(result, data, column) {
     const text = data[0].getColumnNames();
     const namesLength = getTextLength(text, column);
 
-    result = addSpaceToResult(result, getTruncatedLength(data, namesLength))
+    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
         + addTextToTheCell(text, column);
-    return addSpaceToResult(result, getTruncatedLength(data, namesLength))
+    return addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
 }
 
 function getPaddingWithValues(result, data, values, column) {
     const namesLength = getTextLength(values, column);
 
-    result = addSpaceToResult(result, getTruncatedLength(data, namesLength))
+    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
         + addTextToTheCell(values, column);
-    return addSpaceToResult(result, getTruncatedLength(data, namesLength))
+    return addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
 }
 
 function chainRows(result, data, columns, i) {
@@ -111,7 +107,7 @@ function chainRows(result, data, columns, i) {
     if (valuesLength % 2 === 0) {
         result = getPaddingWithValues(result, data, values, i) + '║';
     } else {
-        result = addSpaceToResult(result, getTruncatedLength(data, valuesLength)) + addTextToTheCell(values, i);
+        result = addSpaceToResult(result, calculate.getTruncatedLength(data, valuesLength)) + addTextToTheCell(values, i);
         result = addShiftedSpaceToResult(result, data, valuesLength) + '║';
     }
 
@@ -120,21 +116,21 @@ function chainRows(result, data, columns, i) {
 
 function makeColumns(data, columns) {
     let result = '║';
-    for (let i = 0; i < calculate.getColumnLength(data); i++) {
+    for (let i = 0; i < calculate.getColumnsQuantity(data); i++) {
         result = chainRows(result, data, columns, i)
     }
     return result;
 }
 
 function addShiftedSpaceToResult(result, data, length) {
-    return addSpaceToResult(result, getTruncatedLength(data, length) + SHIFT)
+    return addSpaceToResult(result, calculate.getTruncatedLength(data, length) + SHIFT)
 }
 
 function getPaddingWithShortColumn(result, data, column) {
     const names = data[0].getColumnNames();
     const namesLength = getTextLength(names, column);
 
-    result = addSpaceToResult(result, getTruncatedLength(data, namesLength))
+    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
         + addTextToTheCell(names, column);
     return addShiftedSpaceToResult(result, data, namesLength);
 }
@@ -153,7 +149,7 @@ function addText(data, column) {
 }
 
 function makeTextRow(result, data) {
-    for (let i = 0; i < calculate.getColumnLength(data); i++) {
+    for (let i = 0; i < calculate.getColumnsQuantity(data); i++) {
         result += addText(data, i);
     }
 
@@ -161,12 +157,12 @@ function makeTextRow(result, data) {
 }
 
 function makeFullHorizontalLine(data) {
-    const maxColumnSize = calculate.calculateMaxColumnSize(data);
+    const maxColumnSize = calculate.calculateColumnSize(data);
     return continueEqualityLine(makeLineWithJunction(data), maxColumnSize);
 }
 
 function getHeaderOfTheTable(data) {
-    const maxColumnSize = calculate.calculateMaxColumnSize(data);
+    const maxColumnSize = calculate.calculateColumnSize(data);
 
     let result = makeLineWithTJunction(data)
     result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╗');
@@ -181,7 +177,7 @@ function getHeaderOfTheTable(data) {
 function startRow(result, data, columns) {
     if (columns < data.length - 1) {
         result += makeLineWithJunction(data);
-        result = continueEqualityLine(result, calculate.calculateMaxColumnSize(data)) + addEndOfLineMarker('╣');
+        result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + addEndOfLineMarker('╣');
     }
     return result;
 }
@@ -199,13 +195,13 @@ function finishRows(data) {
 function getStringTableData(data) {
     let result = finishRows(data);
     result += makeLineWithTUpJunction(data);
-    result = continueEqualityLine(result, calculate.calculateMaxColumnSize(data)) + addEndOfLineMarker('╝');
+    result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + addEndOfLineMarker('╝');
     return result;
 }
 
 module.exports = {
     getTableString(data, tableName) {
-        if (calculate.getMaxColumnLength(data) === 0) {
+        if (calculate.getColumnLength(data) === 0) {
             return getEmptyTable(tableName);
         }
 

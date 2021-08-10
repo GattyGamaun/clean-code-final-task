@@ -9,7 +9,7 @@ function reverseMaxLength(name, maxLength) {
     return maxLength;
 }
 
-function updateMaxLength(names, maxLength) {
+function updateLength(names, maxLength) {
     for (const name of names) {
         maxLength = reverseMaxLength(name, maxLength);
     }
@@ -18,31 +18,30 @@ function updateMaxLength(names, maxLength) {
 }
 
 module.exports = {
-    getColumnLength(array) {
+    getColumnsQuantity(array) {
         return array[0].getColumnNames().length;
     },
-    getMaxColumnLength(array) {
+    getColumnLength(array) {
         if (array.length <= 0) {
             return 0;
         }
-        let maxLength = updateMaxLength(array[0].getColumnNames(), 0);
+        let length = updateLength(array[0].getColumnNames(), 0);
 
         for (const dataSet of array) {
-            maxLength = updateMaxLength(dataSet.getValues(), maxLength);
+            length = updateLength(dataSet.getValues(), length);
         }
-
-        return maxLength;
+        return length;
     },
-    calculateMaxColumnSize(array) {
-        let maxColumnSize = this.getMaxColumnLength(array);
-        if (maxColumnSize % 2 === 0) {
-            return maxColumnSize + ONE_COLUMN;
+    calculateColumnSize(array) {
+        let columnSize = this.getColumnLength(array);
+        if (columnSize % 2 === 0) {
+            return columnSize + ONE_COLUMN;
         }
 
-        return maxColumnSize + TWO_COLUMNS;
+        return columnSize + TWO_COLUMNS;
 
     },
     getTruncatedLength(data, nameLength) {
-        return Math.trunc((this.calculateMaxColumnSize(data) - nameLength) / ONE_COLUMN);
+        return Math.trunc((this.calculateColumnSize(data) - nameLength) / ONE_COLUMN);
     }
 }
