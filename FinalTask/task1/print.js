@@ -1,3 +1,4 @@
+const calculate = require('./calculate');
 const draw = require('./draw');
 const SECOND_VALUE = 2;
 
@@ -19,8 +20,8 @@ module.exports = class Print {
 
     makeView(command) {
         const tableName = command[1];
-        const data = this.manager.getTableData(tableName);
-        this.view.write(draw.getTableString(data, tableName));
+        calculate.setData(this.manager.getTableData(tableName));
+        this.view.write(draw.getTableString(tableName));
     }
 
     getIncorrectNumberOfParametersError(command) {

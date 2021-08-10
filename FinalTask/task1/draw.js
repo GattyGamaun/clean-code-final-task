@@ -1,9 +1,6 @@
 const os = require('os');
 const calculate = require('./calculate');
 
-const ONE_COLUMN = 2;
-const SHIFT = 1;
-
 function getEmptyTableMessage(name) {
     return '║ Table "' + name + '" is empty or does not exist ║';
 }
@@ -12,12 +9,8 @@ function addEndOfLineMarker(element = '') {
     return element + os.EOL;
 }
 
-function updateLength(text) {
-    return text.length - ONE_COLUMN;
-}
-
 function makeLineForEmptyTable(result, text) {
-    return continueEqualityLine(result, updateLength(getEmptyTableMessage(text)));
+    return continueEqualityLine(result, calculate.updateLength(getEmptyTableMessage(text)));
 }
 
 function continueEqualityLine(result, size) {
@@ -28,42 +21,30 @@ function continueEqualityLine(result, size) {
     return result;
 }
 
-function addSpaceToResult(result, size) {
-    for (let i = 0; i < size; i++) {
-        result += ' ';
-    }
-
-    return result;
-}
-
-function makeLineWithJunction(data) {
-    const size = calculate.calculateColumnSize(data);
-    const count = calculate.getColumnsQuantity(data);
+function makeLineWithJunction() {
     let result = '╠';
 
-    for (let i = 1; i < count; i++) {
-        result = continueEqualityLine(result, size) + '╬';
+    for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
+        result = continueEqualityLine(result, calculate.getSize()) + '╬';
     }
 
     return result;
 }
 
-function makeLineWithTJunction(data) {
-    const size = calculate.calculateColumnSize(data);
-    const count = calculate.getColumnsQuantity(data);
+function makeLineWithTJunction() {
     let result = '╔';
 
-    for (let i = 1; i < count; i++) {
-        result = continueEqualityLine(result, size) + '╦';
+    for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
+        result = continueEqualityLine(result, calculate.getSize()) + '╦';
     }
 
     return result;
 }
 
-function makeLineWithTUpJunction(data) {
+function makeLineWithTUpJunction() {
     let result = '╚';
-    for (let i = 1; i < calculate.getColumnsQuantity(data); i++) {
-        result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + '╩';
+    for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
+        result = continueEqualityLine(result, calculate.getSize()) + '╩';
     }
 
     return result;
@@ -75,136 +56,68 @@ function getEmptyTable(name) {
     return makeLineForEmptyTable(result, name) + addEndOfLineMarker('╝');
 }
 
-function addTextToTheCell(text, column) {
-    return text[column].toString();
-}
-
-function getTextLength(text, column) {
-    return addTextToTheCell(text, column).length;
-}
-
-function getPaddingWithNames(result, data, column) {
-    const text = data[0].getColumnNames();
-    const namesLength = getTextLength(text, column);
-
-    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
-        + addTextToTheCell(text, column);
-    return addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
-}
-
-function getPaddingWithValues(result, data, values, column) {
-    const namesLength = getTextLength(values, column);
-
-    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
-        + addTextToTheCell(values, column);
-    return addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
-}
-
-function chainRows(result, data, columns, i) {
-
-    const values = data[columns].getValues();
-    const valuesLength = values[i].toString().length;
-    if (valuesLength % 2 === 0) {
-        result = getPaddingWithValues(result, data, values, i) + '║';
-    } else {
-        result = addSpaceToResult(result, calculate.getTruncatedLength(data, valuesLength)) + addTextToTheCell(values, i);
-        result = addShiftedSpaceToResult(result, data, valuesLength) + '║';
-    }
-
-    return result;
-}
-
-function makeColumns(data, columns) {
+function makeColumns(columns) {
     let result = '║';
-    for (let i = 0; i < calculate.getColumnsQuantity(data); i++) {
-        result = chainRows(result, data, columns, i)
+    for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
+        result = calculate.chainRows(result, columns, i)
     }
     return result;
 }
 
-function addShiftedSpaceToResult(result, data, length) {
-    return addSpaceToResult(result, calculate.getTruncatedLength(data, length) + SHIFT)
-}
-
-function getPaddingWithShortColumn(result, data, column) {
-    const names = data[0].getColumnNames();
-    const namesLength = getTextLength(names, column);
-
-    result = addSpaceToResult(result, calculate.getTruncatedLength(data, namesLength))
-        + addTextToTheCell(names, column);
-    return addShiftedSpaceToResult(result, data, namesLength);
-}
-
-function addText(data, column) {
-    const names = data[0].getColumnNames();
-    let result = '║';
-
-    if (getTextLength(names, column) % 2 === 0) {
-        result = getPaddingWithNames(result, data, column)
-    } else {
-        result = getPaddingWithShortColumn(result, data, column)
+function makeTextRow(result) {
+    for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
+        result += calculate.addText(i);
     }
 
     return result;
 }
 
-function makeTextRow(result, data) {
-    for (let i = 0; i < calculate.getColumnsQuantity(data); i++) {
-        result += addText(data, i);
-    }
-
-    return result;
+function makeFullHorizontalLine() {
+    return continueEqualityLine(makeLineWithJunction(), calculate.getSize());
 }
 
-function makeFullHorizontalLine(data) {
-    const maxColumnSize = calculate.calculateColumnSize(data);
-    return continueEqualityLine(makeLineWithJunction(data), maxColumnSize);
-}
+function getHeaderOfTheTable() {
+    let result = makeLineWithTJunction()
+    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╗');
+    result = makeTextRow(result) + addEndOfLineMarker('║');
 
-function getHeaderOfTheTable(data) {
-    const maxColumnSize = calculate.calculateColumnSize(data);
-
-    let result = makeLineWithTJunction(data)
-    result = continueEqualityLine(result, maxColumnSize) + addEndOfLineMarker('╗');
-    result = makeTextRow(result, data) + addEndOfLineMarker('║');
-
-    if (data.length > 0) {
-        result += makeFullHorizontalLine(data) + addEndOfLineMarker('╣')
+    if (calculate.getDataLength() > 0) {
+        result += makeFullHorizontalLine() + addEndOfLineMarker('╣')
     }
     return result;
 }
 
-function startRow(result, data, columns) {
-    if (columns < data.length - 1) {
-        result += makeLineWithJunction(data);
-        result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + addEndOfLineMarker('╣');
+function startRow(result, columns) {
+    if (columns < calculate.getDataLength() - 1) {
+        result += makeLineWithJunction();
+        result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╣');
     }
     return result;
 }
 
-function finishRows(data) {
+function finishRows() {
     let result = '';
-    for (let i = 0; i < data.length; i++) {
-        result += makeColumns(data, i) + addEndOfLineMarker();
-        result = startRow(result, data, i)
+    for (let i = 0; i < calculate.getDataLength(); i++) {
+        result += makeColumns(i) + addEndOfLineMarker();
+        result = startRow(result, i)
     }
 
     return result;
 }
 
-function getStringTableData(data) {
-    let result = finishRows(data);
-    result += makeLineWithTUpJunction(data);
-    result = continueEqualityLine(result, calculate.calculateColumnSize(data)) + addEndOfLineMarker('╝');
+function getStringTableData() {
+    let result = finishRows();
+    result += makeLineWithTUpJunction();
+    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╝');
     return result;
 }
 
 module.exports = {
-    getTableString(data, tableName) {
-        if (calculate.getColumnLength(data) === 0) {
-            return getEmptyTable(tableName);
+    getTableString(name) {
+        if (calculate.getColumnLength() === 0) {
+            return getEmptyTable(name);
         }
 
-        return getHeaderOfTheTable(data) + getStringTableData(data);
+        return getHeaderOfTheTable() + getStringTableData();
     }
 }
