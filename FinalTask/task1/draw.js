@@ -87,14 +87,14 @@ function addShiftedSpaceToResult(result, length) {
     return addColumnSpaces(result, calculate.getTruncatedLength(length) + SHIFT)
 }
 
-function chainRows(result, columns, i) {
+function chainRows(result, columns, quantity) {
     const values = calculate.getColumnValues(columns);
-    const valuesLength = values[i].toString().length;
+    const valuesLength = values[quantity].toString().length;
 
     if (valuesLength % 2 === 0) {
-        result = getPaddingWithValues(result, values, i) + VERTICAL_LINE;
+        result = getPaddingWithValues(result, values, quantity) + VERTICAL_LINE;
     } else {
-        result = addColumnSpaces(result, calculate.getTruncatedLength(valuesLength)) + addTextToTheCell(values, i);
+        result = addColumnSpaces(result, calculate.getTruncatedLength(valuesLength)) + addTextToTheCell(values, quantity);
         result = addShiftedSpaceToResult(result, valuesLength) + VERTICAL_LINE;
     }
 
