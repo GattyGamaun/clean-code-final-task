@@ -1,8 +1,19 @@
 const os = require('os');
 const calculate = require('./calculate');
 
+const VERTICAL_LINE = '║';
+const JUNCTION = '╬';
+const T_JUNCTION = '╦';
+const T_UP_JUNCTION = '╩';
+const T_RIGHT_JUNCTION = '╠';
+const T_LEFT_JUNCTION = '╣';
+const LEFT_TOP_CORNER = '╔';
+const LEFT_BOTTOM_CORNER = '╚';
+const RIGHT_TOP_CORNER = '╗';
+const RIGHT_BOTTOM_CORNER = '╝';
+
 function getEmptyTableMessage(name) {
-    return '║ Table "' + name + '" is empty or does not exist ║';
+    return `${VERTICAL_LINE} Table "${name}" is empty or does not exist ${VERTICAL_LINE}`;
 }
 
 function addEndOfLineMarker(element = '') {
@@ -22,42 +33,42 @@ function continueEqualityLine(result, size) {
 }
 
 function makeLineWithJunction() {
-    let result = '╠';
+    let result = T_RIGHT_JUNCTION;
 
     for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + '╬';
+        result = continueEqualityLine(result, calculate.getSize()) + JUNCTION;
     }
 
     return result;
 }
 
 function makeLineWithTJunction() {
-    let result = '╔';
+    let result = LEFT_TOP_CORNER;
 
     for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + '╦';
+        result = continueEqualityLine(result, calculate.getSize()) + T_JUNCTION;
     }
 
     return result;
 }
 
 function makeLineWithTUpJunction() {
-    let result = '╚';
+    let result = LEFT_BOTTOM_CORNER;
     for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + '╩';
+        result = continueEqualityLine(result, calculate.getSize()) + T_UP_JUNCTION;
     }
 
     return result;
 }
 
 function getEmptyTable(name) {
-    const result = makeLineForEmptyTable('╔', name) + addEndOfLineMarker('╗')
-        + addEndOfLineMarker(getEmptyTableMessage(name)) + '╚';
-    return makeLineForEmptyTable(result, name) + addEndOfLineMarker('╝');
+    const result = makeLineForEmptyTable(LEFT_TOP_CORNER, name) + addEndOfLineMarker(RIGHT_TOP_CORNER)
+        + addEndOfLineMarker(getEmptyTableMessage(name)) + LEFT_BOTTOM_CORNER;
+    return makeLineForEmptyTable(result, name) + addEndOfLineMarker(RIGHT_BOTTOM_CORNER);
 }
 
 function makeColumns(columns) {
-    let result = '║';
+    let result = VERTICAL_LINE;
     for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
         result = calculate.chainRows(result, columns, i)
     }
@@ -78,11 +89,11 @@ function makeFullHorizontalLine() {
 
 function getHeaderOfTheTable() {
     let result = makeLineWithTJunction()
-    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╗');
-    result = makeTextRow(result) + addEndOfLineMarker('║');
+    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(RIGHT_TOP_CORNER);
+    result = makeTextRow(result) + addEndOfLineMarker(VERTICAL_LINE);
 
     if (calculate.getDataLength() > 0) {
-        result += makeFullHorizontalLine() + addEndOfLineMarker('╣')
+        result += makeFullHorizontalLine() + addEndOfLineMarker(T_LEFT_JUNCTION);
     }
     return result;
 }
@@ -90,7 +101,7 @@ function getHeaderOfTheTable() {
 function startRow(result, columns) {
     if (columns < calculate.getDataLength() - 1) {
         result += makeLineWithJunction();
-        result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╣');
+        result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(T_LEFT_JUNCTION);
     }
     return result;
 }
@@ -108,7 +119,7 @@ function finishRows() {
 function getStringTableData() {
     let result = finishRows();
     result += makeLineWithTUpJunction();
-    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker('╝');
+    result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(RIGHT_BOTTOM_CORNER);
     return result;
 }
 

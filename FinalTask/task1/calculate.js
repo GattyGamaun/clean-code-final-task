@@ -1,6 +1,7 @@
 const ONE_COLUMN = 2;
 const TWO_COLUMNS = 3;
 const SHIFT = 1;
+const VERTICAL_LINE = '║';
 
 function reverseMaxLength(name, length) {
     if (name.toString().length > length) {
@@ -76,10 +77,10 @@ module.exports = {
         const valuesLength = values[i].toString().length;
 
         if (valuesLength % 2 === 0) {
-            result = this.getPaddingWithValues(result, values, i) + '║';
+            result = this.getPaddingWithValues(result, values, i) + VERTICAL_LINE;
         } else {
             result = addColumnSpaces(result, this.getTruncatedLength(valuesLength)) + addTextToTheCell(values, i);
-            result = this.addShiftedSpaceToResult(result, valuesLength) + '║';
+            result = this.addShiftedSpaceToResult(result, valuesLength) + VERTICAL_LINE;
         }
 
         return result;
@@ -95,7 +96,7 @@ module.exports = {
         const text = this.getNames();
         const namesLength = getTextLength(text, column);
 
-        let result = addColumnSpaces('║', this.getTruncatedLength(namesLength))
+        let result = addColumnSpaces(VERTICAL_LINE, this.getTruncatedLength(namesLength))
             + addTextToTheCell(text, column);
         return addColumnSpaces(result, this.getTruncatedLength(namesLength))
     },
@@ -103,7 +104,7 @@ module.exports = {
         const namesLength = getTextLength(values, column);
         result = addColumnSpaces(result, this.getTruncatedLength(namesLength))
             + addTextToTheCell(values, column);
-        return addColumnSpaces(result, this.getTruncatedLength(namesLength))
+        return addColumnSpaces(result, this.getTruncatedLength(namesLength));
     },
     addShiftedSpaceToResult(result, length) {
         return addColumnSpaces(result, this.getTruncatedLength(length) + SHIFT)
@@ -112,7 +113,7 @@ module.exports = {
         const names = this.getNames();
         const namesLength = getTextLength(names, column);
 
-        let result = addColumnSpaces('║', this.getTruncatedLength(namesLength))
+        let result = addColumnSpaces(VERTICAL_LINE, this.getTruncatedLength(namesLength))
             + addTextToTheCell(names, column);
         return this.addShiftedSpaceToResult(result, namesLength);
     }
