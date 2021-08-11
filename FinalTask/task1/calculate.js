@@ -50,7 +50,7 @@ module.exports = {
         if (this.data.length <= 0) {
             return 0;
         }
-        let length = updateLength(this.data[0].getColumnNames(), 0);
+        let length = updateLength(this.getNames(), 0);
 
         for (const dataSet of this.data) {
             length = updateLength(dataSet.getValues(), length);
@@ -85,27 +85,22 @@ module.exports = {
         return result;
     },
     addText(columns) {
-        let result = '║';
-
         if (getTextLength(this.getNames(), columns) % 2 === 0) {
-            result = this.getPaddingWithNames(result, columns)
-        } else {
-            result = this.getPaddingWithShortColumn(result, columns)
+            return this.getPaddingWithNames(columns);
         }
 
-        return result;
+        return this.getPaddingWithShortColumn(columns);
     },
-    getPaddingWithNames(result, column) {
+    getPaddingWithNames(column) {
         const text = this.getNames();
         const namesLength = getTextLength(text, column);
 
-        result = addColumnSpaces(result, this.getTruncatedLength(namesLength))
+        let result = addColumnSpaces('║', this.getTruncatedLength(namesLength))
             + addTextToTheCell(text, column);
         return addColumnSpaces(result, this.getTruncatedLength(namesLength))
     },
     getPaddingWithValues(result, values, column) {
         const namesLength = getTextLength(values, column);
-
         result = addColumnSpaces(result, this.getTruncatedLength(namesLength))
             + addTextToTheCell(values, column);
         return addColumnSpaces(result, this.getTruncatedLength(namesLength))
@@ -113,11 +108,11 @@ module.exports = {
     addShiftedSpaceToResult(result, length) {
         return addColumnSpaces(result, this.getTruncatedLength(length) + SHIFT)
     },
-    getPaddingWithShortColumn(result, column) {
+    getPaddingWithShortColumn(column) {
         const names = this.getNames();
         const namesLength = getTextLength(names, column);
 
-        result = addColumnSpaces(result, this.getTruncatedLength(namesLength))
+        let result = addColumnSpaces('║', this.getTruncatedLength(namesLength))
             + addTextToTheCell(names, column);
         return this.addShiftedSpaceToResult(result, namesLength);
     }
