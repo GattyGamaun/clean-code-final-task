@@ -1,6 +1,7 @@
 const os = require('os');
 const calculate = require('./calculate');
 
+const SHIFT = 1;
 const VERTICAL_LINE = '║';
 const JUNCTION = '╬';
 const T_JUNCTION = '╦';
@@ -67,17 +68,84 @@ function getEmptyTable(name) {
     return makeLineForEmptyTable(result, name) + addEndOfLineMarker(RIGHT_BOTTOM_CORNER);
 }
 
+function addColumnSpaces(result, size) {
+    for (let i = 0; i < size; i++) {
+        result += ' ';
+    }
+
+    return result;
+}
+
+function getPaddingWithValues(result, values, column) {
+    const namesLength = getTextLength(values, column);
+
+    result = addColumnSpaces(result, calculate.getTruncatedLength(namesLength))
+        + addTextToTheCell(values, column);
+    return addColumnSpaces(result, calculate.getTruncatedLength(namesLength));
+}
+function addShiftedSpaceToResult(result, length) {
+    return addColumnSpaces(result, calculate.getTruncatedLength(length) + SHIFT)
+}
+
+function chainRows(result, columns, i) {
+    const values = calculate.getColumnValues(columns);
+    const valuesLength = values[i].toString().length;
+
+    if (valuesLength % 2 === 0) {
+        result = getPaddingWithValues(result, values, i) + VERTICAL_LINE;
+    } else {
+        result = addColumnSpaces(result, calculate.getTruncatedLength(valuesLength)) + addTextToTheCell(values, i);
+        result = addShiftedSpaceToResult(result, valuesLength) + VERTICAL_LINE;
+    }
+
+    return result;
+}
+
 function makeColumns(columns) {
     let result = VERTICAL_LINE;
     for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
-        result = calculate.chainRows(result, columns, i)
+        result = chainRows(result, columns, i)
     }
     return result;
 }
 
+function addTextToTheCell(text, column) {
+    return text[column].toString();
+}
+
+function getTextLength(text, column) {
+    return addTextToTheCell(text, column).length;
+}
+
+function getPaddingWithNames(column) {
+    const text = calculate.getNames();
+    const namesLength = getTextLength(text, column);
+
+    let result = addColumnSpaces(VERTICAL_LINE, calculate.getTruncatedLength(namesLength))
+        + addTextToTheCell(text, column);
+    return addColumnSpaces(result, calculate.getTruncatedLength(namesLength))
+}
+
+function getPaddingWithShortColumn(column) {
+    const names = calculate.getNames();
+    const namesLength = getTextLength(names, column);
+
+    let result = addColumnSpaces(VERTICAL_LINE, calculate.getTruncatedLength(namesLength))
+        + addTextToTheCell(names, column);
+    return addShiftedSpaceToResult(result, namesLength);
+}
+
+function addText(columns) {
+    if (getTextLength(calculate.getNames(), columns) % 2 === 0) {
+        return getPaddingWithNames(columns);
+    }
+
+    return getPaddingWithShortColumn(columns);
+}
+
 function makeTextRow(result) {
     for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
-        result += calculate.addText(i);
+        result += addText(i);
     }
 
     return result;
