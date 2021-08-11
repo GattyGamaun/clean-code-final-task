@@ -33,30 +33,11 @@ function continueEqualityLine(result, size) {
     return result;
 }
 
-function makeLineWithJunction() {
-    let result = T_RIGHT_JUNCTION;
+function makeLineWithJunction(startElement, followingElement) {
+    let result = startElement;
 
     for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + JUNCTION;
-    }
-
-    return result;
-}
-
-function makeLineWithTJunction() {
-    let result = LEFT_TOP_CORNER;
-
-    for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + T_JUNCTION;
-    }
-
-    return result;
-}
-
-function makeLineWithTUpJunction() {
-    let result = LEFT_BOTTOM_CORNER;
-    for (let i = 1; i < calculate.getColumnsQuantity(); i++) {
-        result = continueEqualityLine(result, calculate.getSize()) + T_UP_JUNCTION;
+        result = continueEqualityLine(result, calculate.getSize()) + followingElement;
     }
 
     return result;
@@ -83,8 +64,9 @@ function getPaddingWithValues(result, values, column) {
         + addTextToTheCell(values, column);
     return addColumnSpaces(result, calculate.getTruncatedLength(namesLength));
 }
+
 function addShiftedSpaceToResult(result, length) {
-    return addColumnSpaces(result, calculate.getTruncatedLength(length) + SHIFT)
+    return addColumnSpaces(result, calculate.getTruncatedLength(length) + SHIFT);
 }
 
 function chainRows(result, columns, quantity) {
@@ -103,8 +85,9 @@ function chainRows(result, columns, quantity) {
 
 function makeColumns(columns) {
     let result = VERTICAL_LINE;
+
     for (let i = 0; i < calculate.getColumnsQuantity(); i++) {
-        result = chainRows(result, columns, i)
+        result = chainRows(result, columns, i);
     }
     return result;
 }
@@ -123,7 +106,7 @@ function getPaddingWithNames(column) {
 
     let result = addColumnSpaces(VERTICAL_LINE, calculate.getTruncatedLength(namesLength))
         + addTextToTheCell(text, column);
-    return addColumnSpaces(result, calculate.getTruncatedLength(namesLength))
+    return addColumnSpaces(result, calculate.getTruncatedLength(namesLength));
 }
 
 function getPaddingWithShortColumn(column) {
@@ -152,11 +135,11 @@ function makeTextRow(result) {
 }
 
 function makeFullHorizontalLine() {
-    return continueEqualityLine(makeLineWithJunction(), calculate.getSize());
+    return continueEqualityLine(makeLineWithJunction(T_RIGHT_JUNCTION, JUNCTION), calculate.getSize());
 }
 
 function getHeaderOfTheTable() {
-    let result = makeLineWithTJunction()
+    let result = makeLineWithJunction(LEFT_TOP_CORNER, T_JUNCTION)
     result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(RIGHT_TOP_CORNER);
     result = makeTextRow(result) + addEndOfLineMarker(VERTICAL_LINE);
 
@@ -168,7 +151,7 @@ function getHeaderOfTheTable() {
 
 function startRow(result, columns) {
     if (columns < calculate.getDataLength() - 1) {
-        result += makeLineWithJunction();
+        result += makeLineWithJunction(T_RIGHT_JUNCTION, JUNCTION);
         result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(T_LEFT_JUNCTION);
     }
     return result;
@@ -186,7 +169,7 @@ function finishRows() {
 
 function getStringTableData() {
     let result = finishRows();
-    result += makeLineWithTUpJunction();
+    result += makeLineWithJunction(LEFT_BOTTOM_CORNER, T_UP_JUNCTION);
     result = continueEqualityLine(result, calculate.getSize()) + addEndOfLineMarker(RIGHT_BOTTOM_CORNER);
     return result;
 }
